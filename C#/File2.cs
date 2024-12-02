@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,294 +10,524 @@ using System.Threading.Tasks;
 
 namespace Project2
 {
-
-    class Employee
+    namespace crzr
     {
-        string PIB;
-        string Date_Birthday;
-        string Fax;
-        string email;
-        string role;
-        string work_duty;
-        public Employee(string pIB, string date_Birthday, string fax, string email, string role, string work_duty)
+        class crosses_zeros
         {
-            PIB = pIB;
-            Date_Birthday = date_Birthday;
-            Fax = fax;
-            this.email = email;
-            this.role = role;
-            this.work_duty = work_duty;
-        }
-        public ref string GetSetPIB()
-        {
-            return ref PIB;
-        }
-        public ref string GetSetDate_Birthday()
-        {
-            return ref Date_Birthday;
-        }
-        public ref string GetSetFax()
-        {
-            return ref Fax;
-        }
-        public ref string GetSetEmail()
-        {
-            return ref email;
-        }
-        public ref string GetSetRole()
-        {
-            return ref role;
-        }
-        public ref string GetSetWork_duty()
-        {
-            return ref work_duty;
-        }
-        public override string ToString()
-        {
-            return "PIB:\n" + PIB + "\nDate Birtaday:\n" + Date_Birthday + "\nFax:\n" + Fax + "\nemail:\n" + email + "\nrole:\n" + role + "\nwork_duty:\n" + work_duty;
+            static char[,] field;
+            static Random random;
+            static crosses_zeros()
+            {
+                field = new char[3, 3] { { ' ', ' ', ' ' }, { ' ', ' ', ' ' }, { ' ', ' ', ' ' } };
+                random = new Random();
+            }
+            static bool IsEnding()
+            {
+                for (int i = 0; i < field.GetLength(0); i++)
+                {
+                    for (int j = 0; j < field.GetLength(1); j++)
+                    {
+                        if (field[i, j] == ' ')
+                            return false;
+                    }
+                }
+                return true;
+
+            }
+            static Int32 Winner()
+            {
+                //horizontal audit
+                if (field[0, 0] == field[0, 1] && field[0, 0] != ' ')
+                {
+                    if ((field[0, 0] == field[0, 2]))
+                    {
+                        return (field[0, 0] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                    }
+
+                }
+                if (field[1, 0] == field[1, 1] && field[1, 0] != ' ')
+                {
+                    if ((field[1, 0] == field[1, 2]))
+                    {
+                        return (field[1, 0] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                    }
+
+                }
+                if (field[2, 0] == field[2, 1] && field[2, 0] != ' ')
+                {
+                    if ((field[2, 0] == field[2, 2]))
+                    {
+                        return (field[2, 0] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                    }
+                }
+
+                //vertical audit
+                if (field[0, 0] == field[1, 0] && field[0, 0] != ' ')
+                {
+                    if ((field[0, 0] == field[2, 0]))
+                    {
+                        return (field[0, 0] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                    }
+
+                }
+                if (field[0, 1] == field[1, 1] && field[0, 1] != ' ')
+                {
+                    if ((field[0, 1] == field[2, 1]))
+                    {
+                        return (field[0, 1] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                    }
+
+                }
+                if (field[0, 2] == field[1, 2] && field[0, 2] != ' ')
+                {
+                    if ((field[0, 2] == field[2, 2]))
+                    {
+                        return (field[0, 2] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                    }
+
+                }
+
+                //diagonal audit
+
+                if ((field[0, 0] == field[1, 1]) && (field[0, 0] == field[2, 2]) && field[0, 0] != ' ')
+                {
+                    return (field[0, 0] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                }
+                if ((field[0, 2] == field[1, 1]) && (field[0, 2] == field[2, 0]) && field[0, 2] != ' ')
+                {
+                    return (field[0, 0] == '+') ? 1 : -1; //1 - crosses win, -1 - zeros win 
+                }
+                return 0;  // draw
+            }
+            public static void StartGame(bool WithPC = true)
+            {
+                Int16 count_lead = 0;
+                UInt32 x = 0, y = 0;
+                if (WithPC)  // matchmaking
+                {
+                    if (random.Next() % 2 == 1)
+                    {
+                        PCLead(ref x, ref y, ref count_lead);
+                        Print();
+                        Console.WriteLine();
+                        while (!IsEnding())
+                        {
+                            PlayerLead(ref x, ref y, ref count_lead);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                            PCLead(ref x, ref y, ref count_lead);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                        }
+
+
+
+                        Int32 win = Winner();
+                        if (win == 0)
+                        {
+                            Console.WriteLine("draw");
+                        }
+                        else if (win == 1)
+                        {
+                            Console.WriteLine("Player win");
+                        }
+                        else
+                        {
+                            Console.WriteLine("PC win");
+                        }
+                    }
+                    else
+                    {
+                        PlayerLead(ref x, ref y, ref count_lead);
+                        Print();
+                        Console.WriteLine();
+                        while (!IsEnding())
+                        {
+                            PCLead(ref x, ref y, ref count_lead);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                            PlayerLead(ref x, ref y, ref count_lead);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                        }
+
+
+
+                        Int32 win = Winner();
+                        if (win == 0)
+                        {
+                            Console.WriteLine("draw");
+                        }
+                        else if (win == 1)
+                        {
+                            Console.WriteLine("PC win");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Player win");
+                        }
+                    }
+                }
+                else
+                {
+                    if (random.Next() % 2 == 1)
+                    {
+                        PlayerLead(ref x, ref y, ref count_lead, 2);
+                        Print();
+                        Console.WriteLine();
+                        while (!IsEnding())
+                        {
+                            PlayerLead(ref x, ref y, ref count_lead);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                            PlayerLead(ref x, ref y, ref count_lead, 2);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                        }
+
+
+
+                        Int32 win = Winner();
+                        if (win == 0)
+                        {
+                            Console.WriteLine("draw");
+                        }
+                        else if (win == 1)
+                        {
+                            Console.WriteLine("Player 1 win");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Player 2 win");
+                        }
+                    }
+                    else
+                    {
+                        PlayerLead(ref x, ref y, ref count_lead);
+                        Print();
+                        Console.WriteLine();
+                        while (!IsEnding())
+                        {
+                            PlayerLead(ref x, ref y, ref count_lead, 2);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                            PlayerLead(ref x, ref y, ref count_lead);
+                            Print();
+                            Console.WriteLine();
+                            if (Winner() != 0)
+                                break;
+                        }
+
+
+
+                        Int32 win = Winner();
+                        if (win == 0)
+                        {
+                            Console.WriteLine("draw");
+                        }
+                        else if (win == 1)
+                        {
+                            Console.WriteLine("Player 2 win");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Player 1 win");
+                        }
+                    }
+                }
+            }
+            static void Print()
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (j != 1)
+                            Console.Write(" " + field[i, j].ToString() + " ");
+                        else
+                            Console.Write("| " + field[i, j].ToString() + " |");
+
+                    }
+                    Console.WriteLine("\n-----------");
+
+                }
+                Console.WriteLine($" {field[2, 0]} | {field[2, 1]} | {field[2, 2]} ");
+
+            }
+            static void PCLead(ref UInt32 x, ref UInt32 y, ref Int16 count_lead)
+            {
+                do
+                {
+                    x = (UInt32)(random.Next(10) % 3);
+                    y = (UInt32)(random.Next(10) % 3);
+                } while (field[x, y] != ' ');
+                if (count_lead % 2 == 0)
+                {
+                    field[x, y] = '0';
+                    count_lead++;
+
+                }
+                else
+                {
+                    field[x, y] = '+';
+                    count_lead++;
+                }
+
+            }
+            static void PlayerLead(ref UInt32 x, ref UInt32 y, ref Int16 count_lead, Int16 Team = 1)
+            {
+                if (Team == 1)
+                {
+                    do
+                    {
+                        Console.WriteLine("Player 1 lead:");
+                        x = Convert.ToUInt32(Console.ReadLine());
+                        y = Convert.ToUInt32(Console.ReadLine());
+                    } while (x - 1 >= field.GetLength(0) || x - 1 < 0 || y - 1 >= field.GetLength(1) || y - 1 < 0 || field[x - 1, y - 1] != ' ');
+                }
+                else
+                {
+                    do
+                    {
+                        Console.WriteLine("Player 2 lead:");
+                        x = Convert.ToUInt32(Console.ReadLine());
+                        y = Convert.ToUInt32(Console.ReadLine());
+                    } while (x - 1 >= field.GetLength(0) || x - 1 < 0 || y - 1 >= field.GetLength(1) || y - 1 < 0 || field[x - 1, y - 1] != ' ');
+                }
+                if (count_lead % 2 == 0)
+                {
+                    field[x - 1, y - 1] = '0';
+                    count_lead++;
+
+                }
+                else
+                {
+                    field[x - 1, y - 1] = '+';
+                    count_lead++;
+                }
+
+            }
         }
     }
-    class Aircraft
+    namespace morse
     {
-        string Name, Producer_Name;
-        UInt32 date_produce;
-        string Type;
-        public Aircraft(string Name, string Producer_Name, UInt32 date_produce, string Type)
+        class Morse
         {
-            this.Name = Name;
-            this.Producer_Name = Producer_Name;
-            this.date_produce = date_produce;
-            this.Type = Type;
+            static string str_human;
+            static string[] str_morse;
+            static Morse()
+            {
+                str_human = null;
+                str_morse = null;
+            }
+            public enum MorseTable
+            {
+                a = 97,
+                b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z,
+                A = 65, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
 
-        }
-        public ref string GetSetName()
-        {
-            return ref Name;
-        }
-        public ref string GetSetProducerName()
-        {
-            return ref Producer_Name;
-        }
-        public ref string GetSetType()
-        {
-            return ref Type;
-        }
-        public ref UInt32 GetSetDateProduce()
-        {
-            return ref date_produce;
-        }
-        public override String ToString()
-        {
-            return Name + " " + Producer_Name + " " + date_produce.ToString() + " " + Type;
-        }
-        public void ToString(out string value)
-        {
-            value = Name + " " + Producer_Name + " " + date_produce.ToString() + " " + Type;
+            }
+            public static string GetStr_Human
+            {
+                get
+                {
+                    return str_human;
+                }
+            }
+            static string Human_To_Morse(char s)
+            {
+                switch (s)
+                {
+                    case (char)MorseTable.A: return "._ ";
+                    case (char)MorseTable.B: return "_... ";
+                    case (char)MorseTable.C: return "_._. ";
+                    case (char)MorseTable.D: return "_.. ";
+                    case (char)MorseTable.E: return ". ";
+                    case (char)MorseTable.F: return ".._. ";
+                    case (char)MorseTable.G: return "__. ";
+                    case (char)MorseTable.H: return ".... ";
+                    case (char)MorseTable.I: return ".. ";
+                    case (char)MorseTable.J: return ".___ ";
+                    case (char)MorseTable.K: return "_._ ";
+                    case (char)MorseTable.L: return "._.. ";
+                    case (char)MorseTable.M: return "__ ";
+                    case (char)MorseTable.N: return "_. ";
+                    case (char)MorseTable.O: return "___ ";
+                    case (char)MorseTable.P: return ".__. ";
+                    case (char)MorseTable.Q: return "__._ ";
+                    case (char)MorseTable.R: return "._. ";
+                    case (char)MorseTable.S: return "... ";
+                    case (char)MorseTable.T: return "_ ";
+                    case (char)MorseTable.U: return ".._ ";
+                    case (char)MorseTable.V: return "..._ ";
+                    case (char)MorseTable.W: return ".__ ";
+                    case (char)MorseTable.X: return "_.._ ";
+                    case (char)MorseTable.Y: return "_.__ ";
+                    case (char)MorseTable.Z: return "__.. ";
+                    default:
+                        return s.ToString();
+                }
+
+            }
+            public static void Init(string str)
+            {
+                str_human = str;
+                str_morse = new string[1];
+                for (int i = 0; i < str.Length; i++)
+                {
+                    Array.Resize(ref str_morse, i + 1);
+                    str_morse[i] = Human_To_Morse(str[i]);
+
+                }
+            }
+            public static void Morse_Init(string str)
+            {
+                str_human = "";
+                str_morse = str.Split(' ', '!', '?', ',');
+                for (int i = 0; i < str_morse.Length; i++)
+                {
+                    if (str_morse[i] == "._")
+                    {
+                        str_human += 'A';
+                    }
+                    else if (str_morse[i] == "_...")
+                    {
+                        str_human += 'B';
+                    }
+                    else if (str_morse[i] == "_._.")
+                    {
+                        str_human += 'C';
+                    }
+                    else if (str_morse[i] == "_..")
+                    {
+                        str_human += 'D';
+                    }
+                    else if (str_morse[i] == ".")
+                    {
+                        str_human += 'E';
+                    }
+                    else if (str_morse[i] == ".._.")
+                    {
+                        str_human += 'F';
+                    }
+                    else if (str_morse[i] == "__.")
+                    {
+                        str_human += 'G';
+                    }
+                    else if (str_morse[i] == "....")
+                    {
+                        str_human += 'H';
+                    }
+                    else if (str_morse[i] == "..")
+                    {
+                        str_human += 'I';
+                    }
+                    else if (str_morse[i] == ".___")
+                    {
+                        str_human += 'J';
+                    }
+                    else if (str_morse[i] == "_._")
+                    {
+                        str_human += 'K';
+                    }
+                    else if (str_morse[i] == "._..")
+                    {
+                        str_human += 'L';
+                    }
+                    else if (str_morse[i] == "__")
+                    {
+                        str_human += 'M';
+                    }
+                    else if (str_morse[i] == "_.")
+                    {
+                        str_human += 'N';
+                    }
+                    else if (str_morse[i] == "___")
+                    {
+                        str_human += 'O';
+                    }
+                    else if (str_morse[i] == ".__.")
+                    {
+                        str_human += 'P';
+                    }
+                    else if (str_morse[i] == "__._")
+                    {
+                        str_human += 'Q';
+                    }
+                    else if (str_morse[i] == "._.")
+                    {
+                        str_human += 'R';
+                    }
+                    else if (str_morse[i] == "...")
+                    {
+                        str_human += 'S';
+                    }
+                    else if (str_morse[i] == "_")
+                    {
+                        str_human += 'T';
+                    }
+                    else if (str_morse[i] == ".._")
+                    {
+                        str_human += 'U';
+                    }
+                    else if (str_morse[i] == "..._")
+                    {
+                        str_human += 'V';
+                    }
+                    else if (str_morse[i] == ".__")
+                    {
+                        str_human += 'W';
+                    }
+                    else if (str_morse[i] == "_.._")
+                    {
+                        str_human += 'X';
+                    }
+                    else if (str_morse[i] == "_.__")
+                    {
+                        str_human += 'Y';
+                    }
+                    else if (str_morse[i] == "__..")
+                    {
+                        str_human += 'Z';
+                    }
+
+                }
+            }
+            public static void Print_Morse()
+            {
+                for (int i = 0; i < str_morse.Length; i++)
+                {
+                    Console.Write(str_morse[i]);
+                }
+                Console.WriteLine();
+            }
+
         }
     }
-
-    class Matrix
-    {
-        int[,] ints;
-        public Matrix(UInt32 size)
-        {
-            Random random = new Random();
-            ints = new int[size, size];
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    ints[i, j] = random.Next(1000);
-                    Console.Write(ints[i, j] + " ");
-                }
-                Console.WriteLine();
-
-            }
-        }
-        public UInt32 GetLen
-        {
-            get
-            {
-                return (UInt32)ints.GetLength(0);
-            }
-        }
-        
-        public Matrix(UInt32 size, UInt32 Max)
-        {
-            Random random = new Random();
-            ints = new int[size, size];
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    ints[i, j] = random.Next((int)Max);
-                    Console.Write(ints[i, j] + " ");
-                }
-                Console.WriteLine();
-
-            }
-        }
-        public Matrix(UInt32 size, UInt32 Min, UInt32 Max)
-        {
-            Random random = new Random();
-            if (Max < Min)
-            {
-                UInt32 temp = Max;
-                Max = Min;
-                Min = temp;
-            }
-            ints = new int[size, size];
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    ints[i, j] = random.Next((int)Min, (int)Max);
-                    Console.Write(ints[i, j] + " ");
-                }
-                Console.WriteLine();
-
-            }
-        }
-        public Int32 Max()
-        {
-            Int32 max = ints[0, 0];
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    if (ints[i, j] > max)
-                        max = ints[i, j];
-                }
-            }
-            return max;
-        }
-        public void Max(out Int32 max)
-        {
-            max = ints[0, 0];
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    if (ints[i, j] > max)
-                        max = ints[i, j];
-                }
-            }
-            
-        }
-        public Int32 Min()
-        {
-            Int32 min = ints[0, 0];
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    if (ints[i, j] < min)
-                        min = ints[i, j];
-                }
-            }
-            return min;
-        }
-        public void Min(out Int32 min)
-        {
-            min = ints[0, 0];
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    if (ints[i, j] < min)
-                        min = ints[i, j];
-                }
-            }
-
-        }
-        public void InputValue(Int32 value,UInt32 X,UInt32 Y)
-        {
-            if (X > ints.GetLength(0) || X < 0)
-            {
-                Console.WriteLine("X out of range!");
-                return;
-            }
-            else if (Y > ints.GetLength(1) || Y < 0)
-            {
-                Console.WriteLine("Y out of range!");
-                return;
-            }
-            else
-            {
-                ints[X,Y] = value;
-                return;
-            }
-        }
-        public void InputValue(out Int32 value, UInt32 X, UInt32 Y)
-        {
-            if (X > ints.GetLength(0) || X < 0)
-            {
-                Console.WriteLine("X out of range!");
-                value = -1;
-                return;
-            }
-            else if (Y > ints.GetLength(1) || Y < 0)
-            {
-                Console.WriteLine("Y out of range!");
-                value = -1;
-                return;
-            }
-            else
-            {
-                value = ints[X,Y];
-                return;
-            }
-        }
-        public override string ToString()
-        {
-            string str = "";
-            for (int i = 0; i < ints.GetLength(0); i++)
-            {
-                for (int j = 0; j < ints.GetLength(1); j++)
-                {
-                    str += ints[i, j].ToString() + " "; 
-                }
-                str += "\n---------------------------\n";
-            }
-            return str;
-
-        }
-        public void Print() { 
-            for (int i = 0;i < ints.GetLength(0); i++)
-            {
-                for(int j = 0;j < ints.GetLength(1); j++)
-                {
-                    Console.Write(ints[i, j].ToString() + " ");
-                }
-                Console.WriteLine("\n---------------------------");
-            }
-        }
-
-    }
-
     internal class File2
     {
         static void Main(string[] args)
         {
-            Employee em1 = new Employee("Valentin000", "01.09.20015", "+38099999999", "kachay_virus@gmail.com", "Electrician Engineer", "repair hosting systems of company");
-            em1.GetSetWork_duty() = "Eat.Drink.Sleep.Think";
-            Console.WriteLine(em1.ToString());
-            Aircraft pl1 = new Aircraft("SR - 71", "USA military forces", 1990, "Bombardier");
-            Console.WriteLine(pl1.ToString());
-            string str;
-            pl1.GetSetDateProduce() = 2009;
-            pl1.ToString(out str);
-            Console.WriteLine(str);
-            Matrix mat = new Matrix(10);
-            Console.WriteLine("*********************************");
-            Int32 val;
-            mat.InputValue(out val, 1, 0);
-            mat.Print();
-            Console.WriteLine("*********************************");
-            mat.InputValue(val, 2, 0);
-            Console.WriteLine(mat.ToString());
-            Console.WriteLine(val);
-            
+
+            crzr.crosses_zeros.StartGame(false);
+            morse.Morse.Init("HELLO WORLD!");
+            morse.Morse.Print_Morse();
+                
+
         }
     }
 }
