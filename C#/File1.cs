@@ -15,6 +15,10 @@ namespace Project2
             {
                 cars.Add(new Sport_Car());
             }
+            for (int i = 0;i < 2; i++)
+            {
+                cars.Add(new HatchBack_Car());
+            }
             Racing racing = new Racing(cars);
             racing.Start(1000);
 

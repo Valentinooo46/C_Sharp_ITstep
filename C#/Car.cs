@@ -101,6 +101,44 @@ namespace Project2
 
 
     }
+    internal class HatchBack_Car : Car
+    {
+
+
+
+        public HatchBack_Car()
+        {
+            Speed = (ushort)random.Next(10, 75); // M/S
+            weight = (ushort)random.Next(10, 60); //KG
+            color = faker.Commerce.Color();
+            driver = faker.Name.FullName();
+            length_track = 0;
+            percent_drived = 0;
+            percent_speed = 0;
+            track = "";
+            finished += new Action(Finishing);
+
+
+        }
+
+        public override void Update_Speed()
+        {
+            if (length_track != 0 && IsFinished != true)
+            {
+                Speed = (ushort)random.Next(20, 75); // M/S 
+                percent_speed = (float)Speed / length_track;
+                return;
+            }
+            return;
+        }
+        protected override void Finishing()
+        {
+            Console.WriteLine($"{this.driver} on {this.color} hatchback car finished");
+        }
+
+
+
+    }
     internal class Racing
     {
         public List<Car> cars;
