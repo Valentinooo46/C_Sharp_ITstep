@@ -1,0 +1,15 @@
+Set of recipes:
+Title: Sushi
+Cuisine: Japan
+Ingredients: Nori, rice, red fish
+Cooking Time: 14 minutes
+Instructions: Just boil rice and roll the sushi
+Calories: 900
+Type: second
+Title: Pizza
+Cuisine: Italy
+Ingredients: dough, ketchup, cheese, meat, pinapple
+Cooking Time: 120 minutes
+Instructions: throw ingridienst on the disc of dough and bake it
+Calories: 2000
+Type: first

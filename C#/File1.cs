@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RecipeApp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,18 +11,17 @@ namespace Project2
     {
         static void Main(string[] args)
         {
-            List<Car> cars = new List<Car>();
-            for (int i = 0; i < 2; i++)
+            RecipeManagerExt2 recipeManagerExt = new RecipeManagerExt2();
+            recipeManagerExt.AddRecipe(new Recipe2 { Title = "Sushi", Type = "second", Calories = 900, Cuisine = "Japan", Ingredients = new List<string> { "Nori", "rice", "red fish" }, CookingTime = 14, Instructions = "Just boil rice and roll the sushi" });
+            recipeManagerExt.AddRecipe(new Recipe2 { Title = "Rolls", Type = "second", Calories = 1200, Cuisine = "Japan", Ingredients = new List<string> { "Nori", "rice", "red fish","peanut","cheese" }, CookingTime = 20, Instructions = "Just boil rice and roll the rolls" });
+            recipeManagerExt.AddRecipe(new Recipe2 { Title = "Pizza", Type = "first", Calories = 2000, Cuisine = "Italy", Ingredients = new List<string> { "dough", "ketchup", "cheese", "meat", "pinapple" }, CookingTime = 120, Instructions = "throw ingridienst on the disc of dough and bake it" });
+            List<Recipe2> temp = recipeManagerExt.SearchRecipes("Japan");
+            foreach (Recipe recipe in temp)
             {
-                cars.Add(new Sport_Car());
+                Console.WriteLine(recipe);
             }
-            for (int i = 0;i < 2; i++)
-            {
-                cars.Add(new HatchBack_Car());
-            }
-            Racing racing = new Racing(cars);
-            racing.Start(1000);
-
+            recipeManagerExt.ReportBySet("C:\\Users\\valea\\source\\repos\\Project2\\Project2\\temp.txt");
+            
         }
         
     }
