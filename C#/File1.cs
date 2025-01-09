@@ -1,6 +1,7 @@
 ﻿using RecipeApp;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,17 +12,43 @@ namespace Project2
     {
         static void Main(string[] args)
         {
-            RecipeManagerExt2 recipeManagerExt = new RecipeManagerExt2();
-            recipeManagerExt.AddRecipe(new Recipe2 { Title = "Sushi", Type = "second", Calories = 900, Cuisine = "Japan", Ingredients = new List<string> { "Nori", "rice", "red fish" }, CookingTime = 14, Instructions = "Just boil rice and roll the sushi" });
-            recipeManagerExt.AddRecipe(new Recipe2 { Title = "Rolls", Type = "second", Calories = 1200, Cuisine = "Japan", Ingredients = new List<string> { "Nori", "rice", "red fish","peanut","cheese" }, CookingTime = 20, Instructions = "Just boil rice and roll the rolls" });
-            recipeManagerExt.AddRecipe(new Recipe2 { Title = "Pizza", Type = "first", Calories = 2000, Cuisine = "Italy", Ingredients = new List<string> { "dough", "ketchup", "cheese", "meat", "pinapple" }, CookingTime = 120, Instructions = "throw ingridienst on the disc of dough and bake it" });
-            List<Recipe2> temp = recipeManagerExt.SearchRecipes("Japan");
-            foreach (Recipe recipe in temp)
+            Company comp = new Company();
+            comp.Add();
+            comp.Add();
+            comp.Add();
+            comp.Add();
+            var SalariesSortedList = from T in comp
+                                     orderby T.total_salaries descending
+                                     select T;
+            foreach(var salaries in SalariesSortedList)
             {
-                Console.WriteLine(recipe);
+                Console.WriteLine("Весь заробіток відділу:" + salaries.total_salaries + "\nСередній заробіток відділу:" + salaries.average_salary + "\n---------------------------");
             }
-            recipeManagerExt.ReportBySet("C:\\Users\\valea\\source\\repos\\Project2\\Project2\\temp.txt");
-            
+            var SalariesUnitSortedList = from T in comp
+                                         from U in T
+                                     orderby U.total_salary descending
+                                     select U;
+            foreach(var units_salaries in SalariesUnitSortedList)
+            {
+                Console.WriteLine("Весь заробіток юніту:" + units_salaries.total_salary);
+            }
+            Console.WriteLine("----------------------\n");
+            var SalariesAverageSortedList = from T in comp
+                                     orderby T.max_salary - T.min_salary descending
+                                     select T;
+            foreach (var average_salaries in SalariesAverageSortedList)
+            {
+                Console.WriteLine("Розкид по зарплаті відділу:" + (average_salaries.max_salary - average_salaries.min_salary));
+            }
+            Console.WriteLine("----------------------\n");
+            var ShareMansSortedList = from T in comp
+                                            orderby T.share_mans descending
+                                            select T;
+            foreach (var share_mans in ShareMansSortedList)
+            {
+                Console.WriteLine("Частка чоловіків у відділі:" + (share_mans.share_mans * 100) + "%");
+            }
+            Console.WriteLine("----------------------\n");
         }
         
     }
