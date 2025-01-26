@@ -1,9 +1,4 @@
-﻿using Bogus;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace Project2
 {
@@ -11,120 +6,113 @@ namespace Project2
     {
         static void Main(string[] args)
         {
-            IFactory factory = new StudentFactory();
-            Student student = (Student)factory.Create();
-            factory = new TeacherFactory();
-            Teacher teacher = (Teacher)factory.Create();
-            factory = new CourseFactory();
-            Course course = (Course)factory.Create();
-            student.AddCourse(course);
-            teacher.AddCourse(course);
-            factory = new StudentFactory();
-            student = (Student)factory.Create();
-            student.AddCourse(course);
+            Phone phone = new Phone();
+
+            phone.Touch(); 
+            phone.PressPowerButton(); 
+            phone.Touch(); 
+            phone.Touch(); 
+            phone.PressPowerButton(); 
         }
     }
 
-    interface IFactory
+    
+    interface IPhoneState
     {
-        Education Create();
+        void PressPowerButton();
+        void Touch();
     }
-    class StudentFactory : IFactory
-    {
-        public Education Create()
-        {
-            return new Student();
-        }
-    }
-    class TeacherFactory : IFactory
-    {
-        public Education Create()
-        {
-            return new Teacher();
-        }
-    }
-    class CourseFactory : IFactory
-    {
-        public Education Create()
-        {
-            return new Course();
-        }
-    }
-    abstract class Education
-    {
-        protected string Name { get; set; }
-        protected uint Id { get; set; }
 
-    }
-    class Student : Education
+    
+    class PhoneOffState : IPhoneState
     {
+        readonly Phone _phone;
 
-        static Faker faker = new Faker();
-
-        
-        List<Course> Courses { get; set; }
-        public void AddCourse(Course course)
+        public PhoneOffState(Phone phone)
         {
-            Courses.Add(course);
-            course.AddStudent(this);
-        }
-        public Student()
-        {
-            this.Name = faker.Name.FullName();
-            this.Id = (uint)faker.Random.UInt();
-            this.Courses = new List<Course>();
-
-
+            _phone = phone;
         }
 
-    }
-    class Teacher : Education
-    {
-        static Faker faker = new Faker();
-
-        
-
-
-
-
-        List<Course> Courses { get; set; }
-        ushort experience { get; set; }
-        public void AddCourse(Course course)
+        public void PressPowerButton()
         {
-            Courses.Add(course);
-            course.AddTeacher(this);
+            Console.WriteLine("Телефон увімкнено, екран вимкнено.");
+            _phone.SetState(new PhoneOnScreenOffState(_phone));
         }
-        public Teacher()
+
+        public void Touch()
         {
-            this.Name = faker.Name.FullName();
-            this.Id = (uint)faker.Random.UInt();
-            this.experience = faker.Random.UShort(1, 100);
-            this.Courses = new List<Course>();
-
-
+            Console.WriteLine("Телефон вимкнений. Екран не реагує на дотик.");
         }
     }
-    class Course : Education
-    {
-        static Faker faker = new Faker();
-        
 
-        Teacher teacher { get; set; }
-        List<Student> Students { get; set; }
-        public void AddStudent(Student student)
+    
+    class PhoneOnScreenOffState : IPhoneState
+    {
+        readonly Phone _phone;
+
+        public PhoneOnScreenOffState(Phone phone)
         {
-            Students.Add(student);
+            _phone = phone;
         }
-        public void AddTeacher(Teacher teacher)
+
+        public void PressPowerButton()
         {
-            this.teacher = teacher;
+            Console.WriteLine("Телефон вимкнено.");
+            _phone.SetState(new PhoneOffState(_phone));
         }
-        public Course()
+
+        public void Touch()
         {
-            this.Name = faker.Company.CompanyName();
-            this.Id = (uint)faker.Random.UInt();
-            this.Students = new List<Student>();
-            this.teacher = null;
+            Console.WriteLine("Екран увімкнено.");
+            _phone.SetState(new PhoneOnScreenOnState(_phone));
+        }
+    }
+
+    
+    class PhoneOnScreenOnState : IPhoneState
+    {
+        readonly Phone _phone;
+
+        public PhoneOnScreenOnState(Phone phone)
+        {
+            _phone = phone;
+        }
+
+        public void PressPowerButton()
+        {
+            Console.WriteLine("Телефон вимкнено.");
+            _phone.SetState(new PhoneOffState(_phone));
+        }
+
+        public void Touch()
+        {
+            Console.WriteLine("Реакція на дотик, екран увімкнено.");
+        }
+    }
+
+    
+    class Phone
+    {
+        IPhoneState _state;
+
+        public Phone()
+        {
+            _state = new PhoneOffState(this);
+        }
+
+        public void SetState(IPhoneState state)
+        {
+            _state = state;
+        }
+
+        public void PressPowerButton()
+        {
+            _state.PressPowerButton();
+        }
+
+        public void Touch()
+        {
+            _state.Touch();
         }
     }
 }
