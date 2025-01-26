@@ -1,5 +1,6 @@
 ﻿using System;
 
+using System.IO;
 namespace Project2
 {
     internal class File1
@@ -13,6 +14,8 @@ namespace Project2
             phone.Touch(); 
             phone.Touch(); 
             phone.PressPowerButton(); 
+            client client = new client(new ConsoleLogger());
+            client.Log("Message 1");
         }
     }
 
@@ -115,4 +118,68 @@ namespace Project2
             _state.Touch();
         }
     }
+    interface ILogger
+    {
+        void Log(string message);
+    }
+
+    class ConsoleLogger : ILogger
+    {
+        public void Log(string message)
+        {
+            Console.WriteLine(message);
+        }
+    }
+
+    class FileLogger : ILogger
+    {
+        readonly string _filePath;
+
+        public FileLogger(string filePath)
+        {
+            _filePath = filePath;
+        }
+
+        public void Log(string message)
+        {
+            File.AppendAllText(_filePath, message + "\n");
+        }
+    }
+
+    class FileLoggerWithTime : ILogger
+    {
+        readonly string _filePath;
+
+        public FileLoggerWithTime(string filePath)
+        {
+            _filePath = filePath;
+        }
+
+        public void Log(string message)
+        {
+            string messageWithTime = $"{DateTime.Now}: {message}";
+            File.AppendAllText(_filePath, messageWithTime + "\n");
+        }
+    }
+
+    class client
+    {
+        ILogger _logger;
+
+        public client(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public void SetLogger(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public void Log(string message)
+        {
+            _logger.Log(message);
+        }
+    }
 }
+
