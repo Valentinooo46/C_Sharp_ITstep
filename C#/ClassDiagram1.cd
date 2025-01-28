@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Exam_CS.Solution" Collapsed="true">
+    <Position X="14" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAgAEAAAAAEAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Solution.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Exam_CS.Food" Collapsed="true">
+    <Position X="15.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAAEAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Solution.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Exam_CS.Drink" Collapsed="true">
+    <Position X="13" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAACEAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Solution.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Exam_CS.MenuCategory" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="17.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAIAAAAAQAAAACAAAACEBQAAAAAEAAAEAAAAAAAAAAA=</HashCode>
+      <FileName>Solution.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Exam_CS.Menu" Collapsed="true">
+    <Position X="17.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAIAAAAAQARAAiAAAACEBwAAAABIAAAEQAAAAAAAEAA=</HashCode>
+      <FileName>Solution.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Exam_CS.Order" Collapsed="true">
+    <Position X="20" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABQAAAAAAAAAAAAgAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>Order.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Exam_CS.Officiant" Collapsed="true">
+    <Position X="17.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAACAAAAAAAAACAAAAAIAAAgAAAAAACAAAA=</HashCode>
+      <FileName>Officiant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Exam_CS.OrderBuilder" Collapsed="true">
+    <Position X="20" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAABAAABAAAAAAAAAAAAAAAAAAAAAgAAAEEAAQAAAAA=</HashCode>
+      <FileName>Order.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="Exam_CS.Component" Collapsed="true">
+    <Position X="15.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAAEAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Solution.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Exam_CS.IBuilder" Collapsed="true">
+    <Position X="20" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAABAAAAAAAAAAAAAAAAAAAAAAAAAgAAAEAAAQAAAAA=</HashCode>
+      <FileName>Order.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
