@@ -1,91 +1,210 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
 
-namespace обмін_Валют_клієнт
+namespace CA1
 {
     internal class Program
     {
+        static public ConcurrentBag<HandleClientClass> handleClients = new ConcurrentBag<HandleClientClass>();
+        static public ConcurrentBag<HandleClientClass> bannedClients = new ConcurrentBag<HandleClientClass>();
         static void Main(string[] args)
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8; // Встановлюємо кодування консолі на UTF-8 для коректного відображення українських символів
-            Console.InputEncoding = System.Text.Encoding.UTF8; // Встановлюємо кодування вводу на UTF-8
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, 1945);
-            TcpClient клієнт = new TcpClient();
-            клієнт.Connect(endPoint);
-            NetworkStream мережеви_потік = клієнт.GetStream();
-            Boolean exit = false;
-            byte[] буффер = new byte[1024];
-            Int32 кількість_байт;
-            string запит;
-            Console.WriteLine("Введіть логін:");
-            string логін = Console.ReadLine();
-            Console.WriteLine("Введіть пароль:");
-            string пароль = Console.ReadLine();
-            запит = логін + " " + пароль;
-            мережеви_потік.Write(System.Text.Encoding.UTF8.GetBytes(запит));
-            if (мережеви_потік.CanRead)
+            Task.Run(() => ListenForKeyPresses()); // Start listening for key presses in a separate thread
+            string login = Console.ReadLine();
+            while(login != "admin")
             {
-                кількість_байт = мережеви_потік.Read(буффер, 0, буффер.Length);
-                if (кількість_байт > 0)
-                {
-                    string відповідь = System.Text.Encoding.UTF8.GetString(буффер, 0, кількість_байт);
-                    if (відповідь == "BAD")
-                    {
-                        Console.WriteLine("Невірний логін або пароль. Завершення роботи клієнта.");
-                        мережеви_потік.Close();
-                        клієнт.Close();
-                        return;
-                    }
-                    else if (відповідь == "OK")
-                    {
-                        Console.WriteLine("Успішний вхід до системи.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Невідома відповідь від сервера: " + відповідь);
-                        мережеви_потік.Close();
-                        клієнт.Close();
-                        return;
-                    }
+                Console.WriteLine("You Write incorrect login! Write correct");
+                login = Console.ReadLine();
+            }
+            string password = Console.ReadLine();
+            while (password != "qwerty1234") {
+                Console.WriteLine("You Write incorrect password! Write correct");
+                password = Console.ReadLine();
+            }
 
+            TcpListener listener = new TcpListener(System.Net.IPAddress.Any, 1945);
+            listener.Start();
+            Console.WriteLine("Server started. Waiting for clients...");
+            HandleClientClass handleClientClass = null;
+            while (true)
+            {
+                handleClientClass = new HandleClientClass(listener.AcceptTcpClient());
+                handleClients.Add(handleClientClass); // Add the new client to the collection
+                handleClientClass.Run().ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        Console.WriteLine($"Error handling client: {t.Exception?.GetBaseException().Message}");
+                    }
+                });
+            }
+
+        }
+        static void ListenForKeyPresses()
+        {
+            while (true)
+            {
+                var key = Console.ReadKey(true);
+                Console.WriteLine($"Натиснуто: {key.Key}");
+                if (key.Key == ConsoleKey.B)
+                {
+                    string NickName = Console.ReadLine();
+                    var bannedclient = handleClients.FirstOrDefault(c  => c.NickName == NickName);
+                    if (bannedclient != null)
+                    {
+                        
+                        bannedClients.Add(bannedclient);
+                        Console.WriteLine($"client {NickName} was banned");
+                    }
+                    else {
+                        Console.WriteLine($"client with name {NickName} is not exist");
+
+                    }
+                    
                 }
-                while (!exit)
+            }
+        }
+    }
+    public class HandleClientClass
+    {
+
+        public TcpClient Client { get; set; }
+        public string NickName { get; set; }
+        public string[] rooms { get; set; } // This property is not used in the current implementation, but can be used for room management in the future.
+        public NetworkStream Stream { get; set; }
+        public ConcurrentQueue<string> InputMessages { get; set; }
+        public HandleClientClass(TcpClient client) //registration of the client in the server//message: "Nickname|rooms" where rooms is a comma-separated list of rooms the client is in
+        {
+            Client = client;
+            Stream = client.GetStream();
+            int bytesRead;
+            byte[] buffer = new byte[1024];
+            bytesRead = Stream.Read(buffer, 0, buffer.Length);
+            if (bytesRead == 0) throw new Exception("Client disconnected before sending nickname and rooms.");
+            string initialMessage = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var parts = initialMessage.Split('|');
+            if (parts.Length < 2)
+            {
+                throw new Exception("Invalid initial message format. Expected 'Nickname|rooms'.");
+            }
+            NickName = parts[0];
+            rooms = parts[1].Split(','); // This can be used for room management in the future.
+            InputMessages = new ConcurrentQueue<string>();
+        }
+        //listen for messages from the client and add them to the InputMessages collection
+        public async Task Run()
+        {
+            int bytesRead;
+            string message;
+            string responseMessage = string.Empty; // Initialize response message
+            byte[] buffer = new byte[1024];
+            while (true)
+            {
+                try
                 {
-                    try
+                    if (!InputMessages.IsEmpty)
                     {
 
 
-                        Console.WriteLine("Введіть назви валют для отримання курсу або 'exit' для виходу:");
-                        запит = Console.ReadLine();
-                        if (запит.ToLower() == "exit")
+                        while (InputMessages.TryDequeue(out message))
                         {
-                            exit = true;
-                            мережеви_потік.Close();
-                            клієнт.Close();
-                            Console.WriteLine("З'єднання закрито. Завершення роботи клієнта.");
-                            continue;
+                            responseMessage += message + "\n";
                         }
-
-                        мережеви_потік.Write(System.Text.Encoding.UTF8.GetBytes(запит));
-                        кількість_байт = мережеви_потік.Read(буффер, 0, буффер.Length);
-                        if (кількість_байт > 0)
+                        await Stream.WriteAsync(System.Text.Encoding.UTF8.GetBytes(responseMessage));
+                    }
+                    else //response empty message to client if no messages in queue
+                    { 
+                        await Stream.WriteAsync(System.Text.Encoding.UTF8.GetBytes("NONE")); 
+                    }
+                    bytesRead = await Stream.ReadAsync(buffer, 0, buffer.Length);//message must be in this format: "R/G|room1/nickname|text"
+                    if (bytesRead == 0) break; // Client disconnected
+                    message = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    if (message == "exit")
+                    {
+                        Console.WriteLine("Client requested to exit.");
+                        break; // Exit the loop if the client sends "exit"
+                    }
+                    string[] parts = message.Split('|');
+                    if (parts.Length < 3 || parts.Length > 3)
+                    {
+                        Console.WriteLine("Invalid message format. Expected 'R/G|room1/nickname|text'.");
+                        continue; // Skip processing this message
+                    }
+                    else if (parts[0] != "R" && parts[0] != "G")
+                    {
+                        Console.WriteLine("Invalid message type. Expected 'R' for room or 'G' for guest.");
+                        continue; // Skip processing this message
+                    }
+                    else if (parts[0] == "R")
+                    {
+                        //multicast or broadcast
+                        if (parts[1] == "MAIN")
                         {
-                            string відповідь = System.Text.Encoding.UTF8.GetString(буффер, 0, кількість_байт);
-                            Console.WriteLine($"Відповідь від сервера: {відповідь}");
+                            foreach (var client in Program.handleClients)
+                            {
+                                if (client != this && !Program.bannedClients.Contains(client)) // Check if the client is not the sender and not banned
+                                {
+                                    client.InputMessages.Enqueue($"{parts[1]}:{parts[2]}");
+                                }
+                            }
                         }
                         else
                         {
-                            Console.WriteLine("Сервер не відповідає.");
+
+
+
+                            foreach (var client in Program.handleClients)
+                            {
+                                if (client.rooms.Contains(parts[1]) && client != this && !Program.bannedClients.Contains(client)) // Check if the client is in the same room and not the sender
+                                {
+                                    client.InputMessages.Enqueue($"{this.NickName}:{parts[2]}");
+                                }
+                            }
+                        }
+                        Console.WriteLine($"Room message sent: {message} to room {parts[1]}");
+                    }
+                    else if (parts[0] == "G")
+                    {
+                        //unicast
+                        var client = Program.handleClients.FirstOrDefault(c => c.NickName == parts[1]);
+                        if (client != null && client != this && !Program.bannedClients.Contains(client)) // Check if the client exists and is not the sender
+                        {
+                            client.InputMessages.Enqueue($"from {this.NickName}:{parts[2]}");
+                            Console.WriteLine($" message sent: {message} to {parts[1]}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Client {parts[1]} not found or is the sender.");
                         }
                     }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
 
-                        exit = true;
-                    }
+
+
+
+                    Console.WriteLine($"Received: {message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    break;
                 }
             }
+            Dispose(); // Clean up resources when done
+
+        }
+        public void Dispose()
+        {
+            foreach (var client in Program.handleClients)
+            {
+                if (client != this) // Don't send the message back to the sender
+                {
+                    client.InputMessages.Enqueue("Client has left.");
+                }
+            }
+            Stream?.Close();
+            Client?.Close();
+            InputMessages?.Clear();
+            Console.WriteLine("Client disconnected and resources cleaned up.");
         }
     }
 }
