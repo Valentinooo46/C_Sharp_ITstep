@@ -1,81 +1,149 @@
-﻿using System.Net.Sockets;
+﻿using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace CA1Client
+namespace SimpleHTTPClient
 {
+    public class Category //клас для десеріалізації категорії
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        [JsonPropertyName("title")]
+        public string Title { get; set; }
+        [JsonPropertyName("urlSlug")]
+        public string UrlSlug { get; set; }
+        [JsonPropertyName("priority")]
+        public int Priority { get; set; }
+        [JsonPropertyName("image")]
+        public string Image { get; set; }
+    }
+
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            TcpClient tcpClient = new TcpClient("localhost", 1945);
-            Console.WriteLine("Enter your nickname: ");
-            string NickName = Console.ReadLine();
-            Console.WriteLine("Enter the rooms you want to join (comma-separated): ");
-            string[] rooms = Console.ReadLine().Split(',');
-            var networkStream = tcpClient.GetStream();
-            networkStream.Write(System.Text.Encoding.UTF8.GetBytes($"{NickName}|{string.Join(",", rooms)}"));
-            string message = string.Empty;
-            string target = string.Empty; // This can be used for room management in the future.
-                                          // Додайте цей код у Main перед основним циклом
-            Task.Run(() =>
+            Console.OutputEncoding = Encoding.UTF8; // для коректного відображення кирилиці
+            Console.InputEncoding = Encoding.UTF8; // для коректного введення кирилиці
+            while (true)
             {
-                byte[] buffer = new byte[1024];
-                while (true)
-                {
-                    int bytesRead = networkStream.Read(buffer, 0, buffer.Length);
-                    if (bytesRead > 0)
-                    {
-                        string response = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        if (response != "NONE")
-                        {
-                            Console.WriteLine($"[Server]: {response}");
-                        }
-                    }
-                }
-            });
-           
+                Console.WriteLine("1. Додати категорію");
+                Console.WriteLine("2. Вивести список категорій");
+                Console.WriteLine("0. Вийти");
+                Console.Write("Оберіть опцію: ");
+                var option = Console.ReadLine();
 
+                switch (option)
+                {
+                    case "1":
+                        await AddCategoryAsync();
+                        break;
+                    case "2":
+                        await ListCategoriesAsync();
+                        break;
+                    case "0":
+                        return;
+                    default:
+                        Console.WriteLine("Невірна опція.");
+                        break;
+                }
+            }
+        }
 
-            while (true) { 
-                Console.WriteLine("Enter a message to send (or type 'exit' to quit): ");
-                message = Console.ReadLine();
-                if (message.ToLower() == "exit")
-                {
-                    break;
-                }
-                Console.WriteLine("Enter the message type: R-to room,G- to guest");
-                target = Console.ReadLine();
-                if (target == "R")
-                {
-                    Console.WriteLine("Enter the room name(or press Enter for broadcast): ");
-                    target = Console.ReadLine();
-                    if (string.IsNullOrEmpty(target))
-                    {
-                        message = $"R|MAIN|{message}";
-                    }
-                    else
-                    {
-                        message = $"R|{target}|{message}";
-                    }
-                }
-                else if (target == "G")
-                {
-                    Console.WriteLine("Enter the guest name: ");
-                    target = Console.ReadLine();
-                    message = $"G|{target}|{message}";
-                }
-                else
-                {
-                    Console.WriteLine("Invalid target type. Please enter 'R' for room or 'G' for guest.");
-                    continue;
-                }
-                
-                networkStream.Write(System.Text.Encoding.UTF8.GetBytes(message));
-                Console.WriteLine($"Message sent: {message}");
-                // Optionally, you can read a response from the server
-               
-                
+        static async Task AddCategoryAsync()
+        {
+            Console.Write("Введіть назву категорії (title): ");
+            var title = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                Console.WriteLine("Title обов'язковий!");
+                return;
             }
 
+            Console.Write("Введіть urlSlug: ");
+            var urlSlug = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(urlSlug))
+            {
+                Console.WriteLine("urlSlug обов'язковий!");
+                return;
+            }
+
+            Console.Write("Введіть шлях до зображення: ");
+            var imagePath = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(imagePath) || !File.Exists(imagePath))
+            {
+                Console.WriteLine("Файл не знайдено!");
+                return;
+            }
+            Console.WriteLine("Введіть пріорітет категорії");
+            Int32 priority;
+            if(!Int32.TryParse(Console.ReadLine(), out priority))
+            {
+                Console.WriteLine("Пріорітет має бути числом!");
+                return;
+            }
+            string base64Image;
+            try
+            {
+                var imageBytes = await File.ReadAllBytesAsync(imagePath);
+                base64Image = Convert.ToBase64String(imageBytes);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Помилка читання файлу: {ex.Message}");
+                return;
+            }
+
+            var category = new Category()
+            {
+                Title = title,
+                Priority = priority,
+                UrlSlug = urlSlug,
+                Image = base64Image
+            };
+
+            var json = JsonSerializer.Serialize(category);
+            using var client = new HttpClient();
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("https://lohika.itstep.click/api/Categories/add", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Категорію додано успішно!");
+            }
+            else
+            {
+                Console.WriteLine($"Помилка: {response.StatusCode}");
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(error);
+            }
+        }
+
+        static async Task ListCategoriesAsync()
+        {
+            using var client = new HttpClient();
+            var response = await client.GetAsync("https://lohika.itstep.click/api/Categories/list");
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Помилка: {response.StatusCode}");
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(error);
+                return;
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var categories = JsonSerializer.Deserialize<List<Category>>(json);
+
+            if (categories == null || categories.Count == 0)
+            {
+                Console.WriteLine("Список категорій порожній.");
+                return;
+            }
+
+            foreach (var cat in categories)
+            {
+                Console.WriteLine($"ID: {cat.Id}, Title: {cat.Title}, UrlSlug: {cat.UrlSlug}, Priority: {cat.Priority}, Image: {cat.Image}");
+            }
         }
     }
 }
